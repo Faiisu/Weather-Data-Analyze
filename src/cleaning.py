@@ -31,11 +31,12 @@ def WindDirecClean(df: pd.DataFrame):
 
 def cleaningData(fileName):
     df = pd.read_parquet(fileName)
-    for i in df: print(i)
+    # for i in df: print(i)
     
     df = ProvinceClean(df)
     df = WindDirecClean(df)
-    df.to_parquet("cleaned.parquet")
+    df.to_parquet("data/cleaned.parquet")
 
 if __name__ == "__main__":
-    cleaningData("format.parquet")
+    cleaningData("data/format.parquet")
+    print("cleaning sucessful...")

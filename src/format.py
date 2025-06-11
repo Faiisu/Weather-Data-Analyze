@@ -48,9 +48,10 @@ def formatting(file: str):
     for key in l: df[key] = df[key].apply(extract_text)
 
     df = convert_dtypes(df)
-    df.to_parquet("format.parquet")
+    df.to_parquet("data/format.parquet")
 
     return df
 
 if __name__ == "__main__":
-    formatting("raw.csv")
+    formatting("data/raw.csv")
+    print("formatting successful...")

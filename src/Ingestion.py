@@ -16,7 +16,8 @@ def fetch_and_store():
     data_dict = xmltodict.parse(req.text)
     Stations = data_dict['WeatherToday']['Stations']['Station']
     df = pd.DataFrame(Stations)
-    df.to_csv("raw.csv", index=False)
+    df.to_csv("data/raw.csv", index=False)
 
 if __name__ == "__main__":
     fetch_and_store()
+    print("Ingestion sucessful...")
