@@ -1,35 +1,61 @@
+import xmltodict, json, ast, parquet
 import pandas as pd
-import xmltodict
-import json
-import ast
 
-def formatting(file):
+
+def extract_text(val):
+    try:
+        parsed = ast.literal_eval(val)
+        return parsed['#text']
+    except:
+        return None
+    
+def parse_observation(obser_str):
+    data = ast.literal_eval(obser_str)
+    row_dict = {}
+
+    for key in data:
+        if key == "@type": continue
+        elif key == "DateTime":
+            row_dict[key] = data[key]
+        else:
+            sub_dic = data[key]
+            # format column name
+            unit = sub_dic.get('@Unit') or sub_dic.get("@unit")
+            text = sub_dic.get("#text")
+            col_name = f'{key}({unit})'
+            row_dict[col_name] = text
+    
+    return row_dict
+
+def convert_dtypes(df: pd.DataFrame) -> pd.DataFrame:
+    for col in df.columns:
+        if 'Name' in col or col == 'Province':
+            df[col] = df[col].astype(str)
+        elif col == 'DateTime':
+            df[col] = pd.to_datetime(df[col], errors='coerce')
+        else:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+    return df
+
+def formatting(file: str):
     df = pd.read_csv(file)
 
-    for i in range(0,len(df)):
-        obser_dict = df.iloc[i]['Observation']
-        data = ast.literal_eval(obser_dict)
-        for key in data:
-            if(key == '@type'): continue
-            if key == "DateTime":
-                if key not in df.columns: df[key] = None
-                df.at[i,key] = data[key]
-                if(df[key].dtype != 'datetime64[ns]') : df[key] = pd.to_datetime(df[key])
+    parsed_rows = df['Observation'].apply(parse_observation)
+    parsed_df = pd.DataFrame(parsed_rows.tolist())
+    df = pd.concat([df.drop(['Observation'], axis =1 ), parsed_df], axis = 1)
 
-            else:
-                sub_dic = dict(data[key])
-                #format column name
-                columns_format = f'{key}({list(sub_dic.values())[0]})'
+    l = ['Latitude', 'Longitude']
+    for key in l: df[key] = df[key].apply(extract_text)
 
-                #create column
-                if columns_format not in df.columns: df[columns_format] = None
+    df = convert_dtypes(df)
 
-                #set column value
-                try:
-                    df[columns_format] = list(sub_dic.values())[1]
-                except: df[columns_format] = None
     return df
+
+def data_cleaning(df:pd.DataFrame):
+    print(df.dtypes)
+    df.to_csv("format-clean.csv", index=False)
 
 
 if __name__ == "__main__":
     df = formatting("raw.csv")
+    data_cleaning(df)
