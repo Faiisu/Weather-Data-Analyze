@@ -1,4 +1,4 @@
-import xmltodict, json, ast, parquet
+import xmltodict, ast
 import pandas as pd
 
 
@@ -48,14 +48,9 @@ def formatting(file: str):
     for key in l: df[key] = df[key].apply(extract_text)
 
     df = convert_dtypes(df)
+    df.to_parquet("format.parquet")
 
     return df
 
-def data_cleaning(df:pd.DataFrame):
-    print(df.dtypes)
-    df.to_csv("format-clean.csv", index=False)
-
-
 if __name__ == "__main__":
-    df = formatting("raw.csv")
-    data_cleaning(df)
+    formatting("raw.csv")
