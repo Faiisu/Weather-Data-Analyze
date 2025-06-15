@@ -35,7 +35,11 @@ def cleaningData(fileName):
     
     df = ProvinceClean(df)
     df = WindDirecClean(df)
-    df.to_parquet("data/cleaned.parquet")
+    date = df.iloc[0]['DateTime']
+    date = str(date)[:10]
+    fileName = f"data/{date}"
+    df.to_parquet(f"{fileName}.parquet")
+    df.to_csv(f"{fileName}.csv")
 
 if __name__ == "__main__":
     cleaningData("data/format.parquet")

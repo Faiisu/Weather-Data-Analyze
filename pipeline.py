@@ -15,7 +15,7 @@ def cleaning_task():
 
 @flow
 def weather_pipeline():
-    # ingestion_task()
+    ingestion_task()
     format_task()
     cleaning_task()
 
